@@ -13,10 +13,13 @@ use super::from_utf8_unchecked;
 use super::pattern::Pattern;
 use super::pattern::{DoubleEndedSearcher, ReverseSearcher, Searcher};
 use super::validations::{next_code_point, next_code_point_reverse};
+use super::IsAsciiWhitespace;
 use super::LinesAnyMap;
 use super::{BytesIsNotEmpty, UnsafeBytesToStr};
 use super::{CharEscapeDebugContinue, CharEscapeDefault, CharEscapeUnicode};
-use super::{IsAsciiWhitespace, IsNotEmpty, IsWhitespace};
+
+#[cfg(not(no_unicode))]
+use super::{IsNotEmpty, IsWhitespace};
 
 /// An iterator over the [`char`]s of a string slice.
 ///
@@ -1172,6 +1175,7 @@ impl FusedIterator for LinesAny<'_> {}
 /// [`split_whitespace`]: str::split_whitespace
 #[stable(feature = "split_whitespace", since = "1.1.0")]
 #[derive(Clone, Debug)]
+#[cfg(not(no_unicode))]
 pub struct SplitWhitespace<'a> {
     pub(super) inner: Filter<Split<'a, IsWhitespace>, IsNotEmpty>,
 }
@@ -1203,6 +1207,7 @@ pub struct SplitAsciiWhitespace<'a> {
 pub struct SplitInclusive<'a, P: Pattern<'a>>(pub(super) SplitInternal<'a, P>);
 
 #[stable(feature = "split_whitespace", since = "1.1.0")]
+#[cfg(not(no_unicode))]
 impl<'a> Iterator for SplitWhitespace<'a> {
     type Item = &'a str;
 
@@ -1223,6 +1228,7 @@ impl<'a> Iterator for SplitWhitespace<'a> {
 }
 
 #[stable(feature = "split_whitespace", since = "1.1.0")]
+#[cfg(not(no_unicode))]
 impl<'a> DoubleEndedIterator for SplitWhitespace<'a> {
     #[inline]
     fn next_back(&mut self) -> Option<&'a str> {
@@ -1231,8 +1237,10 @@ impl<'a> DoubleEndedIterator for SplitWhitespace<'a> {
 }
 
 #[stable(feature = "fused", since = "1.26.0")]
+#[cfg(not(no_unicode))]
 impl FusedIterator for SplitWhitespace<'_> {}
 
+#[cfg(not(no_unicode))]
 impl<'a> SplitWhitespace<'a> {
     /// Returns remainder of the split string
     ///

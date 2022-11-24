@@ -1,5 +1,6 @@
 #![unstable(feature = "unicode_internals", issue = "none")]
 #![allow(missing_docs)]
+#![cfg(not(no_unicode))]
 
 pub(crate) mod printable;
 mod unicode_data;

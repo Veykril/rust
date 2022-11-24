@@ -39,10 +39,14 @@ pub use error::{ParseBoolError, Utf8Error};
 pub use traits::FromStr;
 
 #[stable(feature = "rust1", since = "1.0.0")]
-pub use iter::{Bytes, CharIndices, Chars, Lines, SplitWhitespace};
+pub use iter::{Bytes, CharIndices, Chars};
+#[stable(feature = "rust1", since = "1.0.0")]
+#[cfg(not(no_unicode))]
+pub use iter::{Lines, SplitWhitespace};
 
 #[stable(feature = "rust1", since = "1.0.0")]
 #[allow(deprecated)]
+#[cfg(not(no_unicode))]
 pub use iter::LinesAny;
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -907,6 +911,7 @@ impl str {
     #[stable(feature = "split_whitespace", since = "1.1.0")]
     #[cfg_attr(not(test), rustc_diagnostic_item = "str_split_whitespace")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn split_whitespace(&self) -> SplitWhitespace<'_> {
         SplitWhitespace { inner: self.split(IsWhitespace).filter(IsNotEmpty) }
     }
@@ -996,6 +1001,7 @@ impl str {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn lines(&self) -> Lines<'_> {
         Lines(self.split_terminator('\n').map(LinesAnyMap))
     }
@@ -1005,6 +1011,7 @@ impl str {
     #[deprecated(since = "1.4.0", note = "use lines() instead now")]
     #[inline]
     #[allow(deprecated)]
+    #[cfg(not(no_unicode))]
     pub fn lines_any(&self) -> LinesAny<'_> {
         LinesAny(self.lines())
     }
@@ -1026,6 +1033,7 @@ impl str {
     #[must_use = "this returns the encoded string as an iterator, \
                   without modifying the original"]
     #[stable(feature = "encode_utf16", since = "1.8.0")]
+    #[cfg(not(no_unicode))]
     pub fn encode_utf16(&self) -> EncodeUtf16<'_> {
         EncodeUtf16 { chars: self.chars(), extra: 0 }
     }
@@ -1850,6 +1858,7 @@ impl str {
                   without modifying the original"]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[cfg_attr(not(test), rustc_diagnostic_item = "str_trim")]
+    #[cfg(not(no_unicode))]
     pub fn trim(&self) -> &str {
         self.trim_matches(|c: char| c.is_whitespace())
     }
@@ -1889,6 +1898,7 @@ impl str {
                   without modifying the original"]
     #[stable(feature = "trim_direction", since = "1.30.0")]
     #[cfg_attr(not(test), rustc_diagnostic_item = "str_trim_start")]
+    #[cfg(not(no_unicode))]
     pub fn trim_start(&self) -> &str {
         self.trim_start_matches(|c: char| c.is_whitespace())
     }
@@ -1928,6 +1938,7 @@ impl str {
                   without modifying the original"]
     #[stable(feature = "trim_direction", since = "1.30.0")]
     #[cfg_attr(not(test), rustc_diagnostic_item = "str_trim_end")]
+    #[cfg(not(no_unicode))]
     pub fn trim_end(&self) -> &str {
         self.trim_end_matches(|c: char| c.is_whitespace())
     }
@@ -1968,6 +1979,7 @@ impl str {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[deprecated(since = "1.33.0", note = "superseded by `trim_start`", suggestion = "trim_start")]
+    #[cfg(not(no_unicode))]
     pub fn trim_left(&self) -> &str {
         self.trim_start()
     }
@@ -2008,6 +2020,7 @@ impl str {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[deprecated(since = "1.33.0", note = "superseded by `trim_end`", suggestion = "trim_end")]
+    #[cfg(not(no_unicode))]
     pub fn trim_right(&self) -> &str {
         self.trim_end()
     }
@@ -2599,6 +2612,7 @@ impl_fn_for_zst! {
     #[derive(Clone)]
     struct CharEscapeDebugContinue impl Fn = |c: char| -> char::EscapeDebug {
         c.escape_debug_ext(EscapeDebugExtArgs {
+            #[cfg(not(no_unicode))]
             escape_grapheme_extended: false,
             escape_single_quote: true,
             escape_double_quote: true
@@ -2612,11 +2626,6 @@ impl_fn_for_zst! {
     #[derive(Clone)]
     struct CharEscapeDefault impl Fn = |c: char| -> char::EscapeDefault {
         c.escape_default()
-    };
-
-    #[derive(Clone)]
-    struct IsWhitespace impl Fn = |c: char| -> bool {
-        c.is_whitespace()
     };
 
     #[derive(Clone)]
@@ -2638,6 +2647,14 @@ impl_fn_for_zst! {
     struct UnsafeBytesToStr impl<'a> Fn = |bytes: &'a [u8]| -> &'a str {
         // SAFETY: not safe
         unsafe { from_utf8_unchecked(bytes) }
+    };
+}
+
+#[cfg(not(no_unicode))]
+impl_fn_for_zst! {
+    #[derive(Clone)]
+    struct IsWhitespace impl Fn = |c: char| -> bool {
+        c.is_whitespace()
     };
 }
 

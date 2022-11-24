@@ -2,7 +2,9 @@
 
 use crate::slice;
 use crate::str::from_utf8_unchecked_mut;
+#[cfg(not(no_unicode))]
 use crate::unicode::printable::is_printable;
+#[cfg(not(no_unicode))]
 use crate::unicode::{self, conversions};
 
 use super::*;
@@ -42,6 +44,7 @@ impl char {
     ///
     /// The version numbering scheme is explained in
     /// [Unicode 11.0 or later, Section 3.1 Versions of the Unicode Standard](https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf#page=4).
+    #[cfg(not(no_unicode))]
     #[stable(feature = "assoc_char_consts", since = "1.52.0")]
     pub const UNICODE_VERSION: (u8, u8, u8) = crate::unicode::UNICODE_VERSION;
 
@@ -427,11 +430,16 @@ impl char {
             '\\' => EscapeDefaultState::Backslash(self),
             '"' if args.escape_double_quote => EscapeDefaultState::Backslash(self),
             '\'' if args.escape_single_quote => EscapeDefaultState::Backslash(self),
+            #[cfg(not(no_unicode))]
             _ if args.escape_grapheme_extended && self.is_grapheme_extended() => {
                 EscapeDefaultState::Unicode(self.escape_unicode())
             }
+            #[cfg(not(no_unicode))]
             _ if is_printable(self) => EscapeDefaultState::Char(self),
+            #[cfg(not(no_unicode))]
             _ => EscapeDefaultState::Unicode(self.escape_unicode()),
+            #[cfg(no_unicode)]
+            _ => EscapeDefaultState::Char(self),
         };
         EscapeDebug(EscapeDefault { state: init_state })
     }
@@ -474,6 +482,7 @@ impl char {
                   without modifying the original"]
     #[stable(feature = "char_escape_debug", since = "1.20.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn escape_debug(self) -> EscapeDebug {
         self.escape_debug_ext(EscapeDebugExtArgs::ESCAPE_ALL)
     }
@@ -721,6 +730,7 @@ impl char {
     #[must_use]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn is_alphabetic(self) -> bool {
         match self {
             'a'..='z' | 'A'..='Z' => true,
@@ -763,6 +773,7 @@ impl char {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[rustc_const_unstable(feature = "const_unicode_case_lookup", issue = "101400")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub const fn is_lowercase(self) -> bool {
         match self {
             'a'..='z' => true,
@@ -805,6 +816,7 @@ impl char {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[rustc_const_unstable(feature = "const_unicode_case_lookup", issue = "101400")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub const fn is_uppercase(self) -> bool {
         match self {
             'A'..='Z' => true,
@@ -837,6 +849,7 @@ impl char {
     #[must_use]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn is_whitespace(self) -> bool {
         match self {
             ' ' | '\x09'..='\x0d' => true,
@@ -866,6 +879,7 @@ impl char {
     #[must_use]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn is_alphanumeric(self) -> bool {
         self.is_alphabetic() || self.is_numeric()
     }
@@ -892,6 +906,7 @@ impl char {
     #[must_use]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn is_control(self) -> bool {
         unicode::Cc(self)
     }
@@ -907,6 +922,7 @@ impl char {
     /// [`DerivedCoreProperties.txt`]: https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
     #[must_use]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub(crate) fn is_grapheme_extended(self) -> bool {
         unicode::Grapheme_Extend(self)
     }
@@ -947,6 +963,7 @@ impl char {
     #[must_use]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn is_numeric(self) -> bool {
         match self {
             '0'..='9' => true,
@@ -1017,6 +1034,7 @@ impl char {
                   without modifying the original"]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn to_lowercase(self) -> ToLowercase {
         ToLowercase(CaseMappingIter::new(conversions::to_lower(self)))
     }
@@ -1109,6 +1127,7 @@ impl char {
                   without modifying the original"]
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
+    #[cfg(not(no_unicode))]
     pub fn to_uppercase(self) -> ToUppercase {
         ToUppercase(CaseMappingIter::new(conversions::to_upper(self)))
     }
@@ -1680,6 +1699,7 @@ impl char {
 
 pub(crate) struct EscapeDebugExtArgs {
     /// Escape Extended Grapheme codepoints?
+    #[cfg(not(no_unicode))]
     pub(crate) escape_grapheme_extended: bool,
 
     /// Escape single quotes?
@@ -1691,6 +1711,7 @@ pub(crate) struct EscapeDebugExtArgs {
 
 impl EscapeDebugExtArgs {
     pub(crate) const ESCAPE_ALL: Self = Self {
+        #[cfg(not(no_unicode))]
         escape_grapheme_extended: true,
         escape_single_quote: true,
         escape_double_quote: true,

@@ -2417,6 +2417,7 @@ impl Debug for str {
         let mut from = 0;
         for (i, c) in self.char_indices() {
             let esc = c.escape_debug_ext(EscapeDebugExtArgs {
+                #[cfg(not(no_unicode))]
                 escape_grapheme_extended: true,
                 escape_single_quote: false,
                 escape_double_quote: true,
@@ -2447,6 +2448,7 @@ impl Debug for char {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         f.write_char('\'')?;
         for c in self.escape_debug_ext(EscapeDebugExtArgs {
+            #[cfg(not(no_unicode))]
             escape_grapheme_extended: true,
             escape_single_quote: true,
             escape_double_quote: false,

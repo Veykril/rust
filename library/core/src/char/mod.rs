@@ -98,6 +98,7 @@ pub const REPLACEMENT_CHARACTER: char = char::REPLACEMENT_CHARACTER;
 /// The version of [Unicode](https://www.unicode.org/) that the Unicode parts of
 /// `char` and `str` methods are based on. Use [`char::UNICODE_VERSION`] instead.
 #[stable(feature = "unicode_version", since = "1.45.0")]
+#[cfg(not(no_unicode))]
 pub const UNICODE_VERSION: (u8, u8, u8) = char::UNICODE_VERSION;
 
 /// Creates an iterator over the UTF-16 encoded code points in `iter`, returning
@@ -409,9 +410,11 @@ impl fmt::Display for EscapeDebug {
 /// [`to_lowercase`]: char::to_lowercase
 #[stable(feature = "rust1", since = "1.0.0")]
 #[derive(Debug, Clone)]
+#[cfg(not(no_unicode))]
 pub struct ToLowercase(CaseMappingIter);
 
 #[stable(feature = "rust1", since = "1.0.0")]
+#[cfg(not(no_unicode))]
 impl Iterator for ToLowercase {
     type Item = char;
     fn next(&mut self) -> Option<char> {
@@ -423,6 +426,7 @@ impl Iterator for ToLowercase {
 }
 
 #[stable(feature = "case_mapping_double_ended", since = "1.59.0")]
+#[cfg(not(no_unicode))]
 impl DoubleEndedIterator for ToLowercase {
     fn next_back(&mut self) -> Option<char> {
         self.0.next_back()
@@ -430,9 +434,11 @@ impl DoubleEndedIterator for ToLowercase {
 }
 
 #[stable(feature = "fused", since = "1.26.0")]
+#[cfg(not(no_unicode))]
 impl FusedIterator for ToLowercase {}
 
 #[stable(feature = "exact_size_case_mapping_iter", since = "1.35.0")]
+#[cfg(not(no_unicode))]
 impl ExactSizeIterator for ToLowercase {}
 
 /// Returns an iterator that yields the uppercase equivalent of a `char`.
@@ -443,9 +449,11 @@ impl ExactSizeIterator for ToLowercase {}
 /// [`to_uppercase`]: char::to_uppercase
 #[stable(feature = "rust1", since = "1.0.0")]
 #[derive(Debug, Clone)]
+#[cfg(not(no_unicode))]
 pub struct ToUppercase(CaseMappingIter);
 
 #[stable(feature = "rust1", since = "1.0.0")]
+#[cfg(not(no_unicode))]
 impl Iterator for ToUppercase {
     type Item = char;
     fn next(&mut self) -> Option<char> {
@@ -457,6 +465,7 @@ impl Iterator for ToUppercase {
 }
 
 #[stable(feature = "case_mapping_double_ended", since = "1.59.0")]
+#[cfg(not(no_unicode))]
 impl DoubleEndedIterator for ToUppercase {
     fn next_back(&mut self) -> Option<char> {
         self.0.next_back()
@@ -464,12 +473,15 @@ impl DoubleEndedIterator for ToUppercase {
 }
 
 #[stable(feature = "fused", since = "1.26.0")]
+#[cfg(not(no_unicode))]
 impl FusedIterator for ToUppercase {}
 
 #[stable(feature = "exact_size_case_mapping_iter", since = "1.35.0")]
+#[cfg(not(no_unicode))]
 impl ExactSizeIterator for ToUppercase {}
 
 #[derive(Debug, Clone)]
+#[cfg(not(no_unicode))]
 enum CaseMappingIter {
     Three(char, char, char),
     Two(char, char),
@@ -477,6 +489,7 @@ enum CaseMappingIter {
     Zero,
 }
 
+#[cfg(not(no_unicode))]
 impl CaseMappingIter {
     fn new(chars: [char; 3]) -> CaseMappingIter {
         if chars[2] == '\0' {
@@ -491,6 +504,7 @@ impl CaseMappingIter {
     }
 }
 
+#[cfg(not(no_unicode))]
 impl Iterator for CaseMappingIter {
     type Item = char;
     fn next(&mut self) -> Option<char> {
@@ -522,6 +536,7 @@ impl Iterator for CaseMappingIter {
     }
 }
 
+#[cfg(not(no_unicode))]
 impl DoubleEndedIterator for CaseMappingIter {
     fn next_back(&mut self) -> Option<char> {
         match *self {
@@ -542,6 +557,7 @@ impl DoubleEndedIterator for CaseMappingIter {
     }
 }
 
+#[cfg(not(no_unicode))]
 impl fmt::Display for CaseMappingIter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
@@ -561,6 +577,7 @@ impl fmt::Display for CaseMappingIter {
 }
 
 #[stable(feature = "char_struct_display", since = "1.16.0")]
+#[cfg(not(no_unicode))]
 impl fmt::Display for ToLowercase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
@@ -568,6 +585,7 @@ impl fmt::Display for ToLowercase {
 }
 
 #[stable(feature = "char_struct_display", since = "1.16.0")]
+#[cfg(not(no_unicode))]
 impl fmt::Display for ToUppercase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
