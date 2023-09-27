@@ -2288,15 +2288,13 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 }
                 ty::Tuple(tys) => {
                     if let Ok(index) = field.as_str().parse::<usize>() {
-                        if field.name == sym::integer(index) {
-                            if let Some(&field_ty) = tys.get(index) {
-                                let adjustments = self.adjust_steps(&autoderef);
-                                self.apply_adjustments(base, adjustments);
-                                self.register_predicates(autoderef.into_obligations());
+                        if let Some(&field_ty) = tys.get(index) {
+                            let adjustments = self.adjust_steps(&autoderef);
+                            self.apply_adjustments(base, adjustments);
+                            self.register_predicates(autoderef.into_obligations());
 
-                                self.write_field_index(expr.hir_id, FieldIdx::from_usize(index));
-                                return field_ty;
-                            }
+                            self.write_field_index(expr.hir_id, FieldIdx::from_usize(index));
+                            return field_ty;
                         }
                     }
                 }
