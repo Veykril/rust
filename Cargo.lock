@@ -4529,6 +4529,7 @@ name = "rustc_target"
 version = "0.0.0"
 dependencies = [
  "bitflags",
+ "indexmap",
  "object 0.36.7",
  "rustc-hash 2.1.0",
  "rustc_abi",

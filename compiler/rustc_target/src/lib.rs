@@ -21,7 +21,6 @@
 
 use std::path::{Path, PathBuf};
 
-#[cfg(feature = "nightly")]
 pub mod asm;
 pub mod callconv;
 pub mod json;
@@ -84,4 +83,8 @@ fn find_relative_libdir(sysroot: &Path) -> std::borrow::Cow<'static, str> {
         }
         Some(libdir) => libdir.into(),
     }
+}
+
+pub trait InternSymbol<S> {
+    fn intern_symbol(&self, symbol: &str) -> S;
 }

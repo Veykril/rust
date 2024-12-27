@@ -810,6 +810,7 @@ impl PanicStrategy {
         }
     }
 
+    #[cfg(feature = "nightly")]
     pub const fn desc_symbol(&self) -> Symbol {
         match *self {
             PanicStrategy::Unwind => sym::unwind,
@@ -817,6 +818,7 @@ impl PanicStrategy {
         }
     }
 
+    #[cfg(feature = "nightly")]
     pub const fn all() -> [Symbol; 2] {
         [Self::Abort.desc_symbol(), Self::Unwind.desc_symbol()]
     }
@@ -1015,6 +1017,8 @@ impl RelocModel {
             RelocModel::RopiRwpi => "ropi-rwpi",
         }
     }
+
+    #[cfg(feature = "nightly")]
     pub const fn desc_symbol(&self) -> Symbol {
         match *self {
             RelocModel::Static => kw::Static,
@@ -1027,6 +1031,7 @@ impl RelocModel {
         }
     }
 
+    #[cfg(feature = "nightly")]
     pub const fn all() -> [Symbol; 7] {
         [
             RelocModel::Static.desc_symbol(),
@@ -2629,10 +2634,12 @@ impl TargetOptions {
         }
     }
 
+    #[cfg(feature = "nightly")]
     pub(crate) fn has_feature(&self, search_feature: &str) -> bool {
         self.features.split(',').any(|f| f.strip_prefix('+').is_some_and(|f| f == search_feature))
     }
 
+    #[cfg(feature = "nightly")]
     pub(crate) fn has_neg_feature(&self, search_feature: &str) -> bool {
         self.features.split(',').any(|f| f.strip_prefix('-').is_some_and(|f| f == search_feature))
     }

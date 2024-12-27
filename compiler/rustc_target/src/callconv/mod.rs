@@ -7,6 +7,7 @@ use rustc_macros::HashStable_Generic;
 #[cfg(feature = "nightly")]
 use rustc_span::Symbol;
 
+use crate::InternSymbol;
 use crate::abi::{
     self, AddressSpace, Align, BackendRepr, HasDataLayout, Pointer, Size, TyAbiInterface,
     TyAndLayout,
@@ -641,20 +642,20 @@ impl<'a, Ty: fmt::Display> fmt::Debug for FnAbi<'a, Ty> {
 /// Error produced by attempting to adjust a `FnAbi`, for a "foreign" ABI.
 #[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
 #[derive(Copy, Clone, Debug)]
-pub enum AdjustForForeignAbiError {
+pub enum AdjustForForeignAbiError<S> {
     /// Target architecture doesn't support "foreign" (i.e. non-Rust) ABIs.
-    Unsupported { arch: Symbol, abi: spec::abi::Abi },
+    Unsupported { arch: S, abi: spec::abi::Abi },
 }
 
 impl<'a, Ty> FnAbi<'a, Ty> {
-    pub fn adjust_for_foreign_abi<C>(
+    pub fn adjust_for_foreign_abi<C, S>(
         &mut self,
         cx: &C,
         abi: spec::abi::Abi,
-    ) -> Result<(), AdjustForForeignAbiError>
+    ) -> Result<(), AdjustForForeignAbiError<S>>
     where
         Ty: TyAbiInterface<'a, C> + Copy,
-        C: HasDataLayout + HasTargetSpec + HasWasmCAbiOpt + HasX86AbiOpt,
+        C: HasDataLayout + HasTargetSpec + HasWasmCAbiOpt + HasX86AbiOpt + InternSymbol<S>,
     {
         if abi == spec::abi::Abi::X86Interrupt {
             if let Some(arg) = self.args.first_mut() {
@@ -737,7 +738,7 @@ impl<'a, Ty> FnAbi<'a, Ty> {
             "bpf" => bpf::compute_abi_info(self),
             arch => {
                 return Err(AdjustForForeignAbiError::Unsupported {
-                    arch: Symbol::intern(arch),
+                    arch: cx.intern_symbol(arch),
                     abi,
                 });
             }
