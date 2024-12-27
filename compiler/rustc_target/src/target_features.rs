@@ -1,8 +1,10 @@
 //! Declares Rust's target feature names for each target.
 //! Note that these are similar to but not always identical to LLVM's feature names,
 //! and Rust adds some features that do not correspond to LLVM features at all.
-use rustc_data_structures::fx::{FxHashMap, FxHashSet};
+#[cfg(feature = "nightly")]
 use rustc_data_structures::stable_hasher::{HashStable, StableHasher};
+use rustc_hash::{FxHashMap, FxHashSet};
+#[cfg(feature = "nightly")]
 use rustc_span::{Symbol, sym};
 
 use crate::spec::Target;
@@ -60,6 +62,7 @@ pub type StabilityUncomputed = Stability<AllowToggleUncomputed>;
 /// `Stability` where `allow_toggle` has already been computed.
 pub type StabilityComputed = Stability<AllowToggleComputed>;
 
+#[cfg(feature = "nightly")]
 impl<CTX, Toggleability: HashStable<CTX>> HashStable<CTX> for Stability<Toggleability> {
     #[inline]
     fn hash_stable(&self, hcx: &mut CTX, hasher: &mut StableHasher) {
@@ -79,6 +82,7 @@ impl<CTX, Toggleability: HashStable<CTX>> HashStable<CTX> for Stability<Toggleab
     }
 }
 
+#[cfg(feature = "nightly")]
 impl<CTX> HashStable<CTX> for AllowToggleComputed {
     #[inline]
     fn hash_stable(&self, hcx: &mut CTX, hasher: &mut StableHasher) {

@@ -52,25 +52,29 @@ fn softfloat_float_abi<Ty>(target: &Target, arg: &mut ArgAbi<'_, Ty>) {
     // integers. Nominally this only exists for "R" profile chips, but sometimes people don't want
     // to use hardfloats even if the hardware supports them, so we do this for all softfloat
     // targets.
-    if let BackendRepr::Scalar(s) = arg.layout.backend_repr
-        && let Primitive::Float(f) = s.primitive()
-    {
-        arg.cast_to(Reg { kind: RegKind::Integer, size: f.size() });
-    } else if let BackendRepr::ScalarPair(s1, s2) = arg.layout.backend_repr
-        && (matches!(s1.primitive(), Primitive::Float(_))
-            || matches!(s2.primitive(), Primitive::Float(_)))
-    {
-        // This case can only be reached for the Rust ABI, so we can do whatever we want here as
-        // long as it does not depend on target features (i.e., as long as we do not use float
-        // registers). So we pass small things in integer registers and large things via pointer
-        // indirection. This means we lose the nice "pass it as two arguments" optimization, but we
-        // currently just have to way to combine a `PassMode::Cast` with that optimization (and we
-        // need a cast since we want to pass the float as an int).
-        if arg.layout.size.bits() <= target.pointer_width.into() {
-            arg.cast_to(Reg { kind: RegKind::Integer, size: arg.layout.size });
-        } else {
-            arg.make_indirect();
+    match arg.layout.backend_repr {
+        BackendRepr::Scalar(s) => {
+            if let Primitive::Float(f) = s.primitive() {
+                arg.cast_to(Reg { kind: RegKind::Integer, size: f.size() });
+            }
         }
+        BackendRepr::ScalarPair(s1, s2)
+            if (matches!(s1.primitive(), Primitive::Float(_))
+                || matches!(s2.primitive(), Primitive::Float(_))) =>
+        {
+            // This case can only be reached for the Rust ABI, so we can do whatever we want here as
+            // long as it does not depend on target features (i.e., as long as we do not use float
+            // registers). So we pass small things in integer registers and large things via pointer
+            // indirection. This means we lose the nice "pass it as two arguments" optimization, but we
+            // currently just have to way to combine a `PassMode::Cast` with that optimization (and we
+            // need a cast since we want to pass the float as an int).
+            if arg.layout.size.bits() <= target.pointer_width.into() {
+                arg.cast_to(Reg { kind: RegKind::Integer, size: arg.layout.size });
+            } else {
+                arg.make_indirect();
+            }
+        }
+        _ => (),
     }
 }
 

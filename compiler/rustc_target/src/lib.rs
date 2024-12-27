@@ -8,19 +8,20 @@
 //! LLVM.
 
 // tidy-alphabetical-start
-#![allow(internal_features)]
+#![cfg_attr(feature = "nightly", internal_features)]
 #![doc(html_root_url = "https://doc.rust-lang.org/nightly/nightly-rustc/")]
-#![doc(rust_logo)]
-#![feature(assert_matches)]
-#![feature(iter_intersperse)]
-#![feature(let_chains)]
-#![feature(rustc_attrs)]
-#![feature(rustdoc_internals)]
+#![cfg_attr(feature = "nightly", doc(rust_logo))]
+#![cfg_attr(feature = "nightly", assert_matches)]
+#![cfg_attr(feature = "nightly", iter_intersperse)]
+#![cfg_attr(feature = "nightly", let_chains)]
+#![cfg_attr(feature = "nightly", rustc_attrs)]
+#![cfg_attr(feature = "nightly", rustdoc_internals)]
 #![warn(unreachable_pub)]
 // tidy-alphabetical-end
 
 use std::path::{Path, PathBuf};
 
+#[cfg(feature = "nightly")]
 pub mod asm;
 pub mod callconv;
 pub mod json;

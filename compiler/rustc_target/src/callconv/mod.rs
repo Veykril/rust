@@ -2,7 +2,9 @@ use std::str::FromStr;
 use std::{fmt, iter};
 
 pub use rustc_abi::{Reg, RegKind};
+#[cfg(feature = "nightly")]
 use rustc_macros::HashStable_Generic;
+#[cfg(feature = "nightly")]
 use rustc_span::Symbol;
 
 use crate::abi::{
@@ -37,7 +39,8 @@ mod x86_64;
 mod x86_win64;
 mod xtensa;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum PassMode {
     /// Ignore the argument.
     ///
@@ -108,10 +111,9 @@ pub use attr_impl::ArgAttribute;
 #[allow(non_upper_case_globals)]
 #[allow(unused)]
 mod attr_impl {
-    use rustc_macros::HashStable_Generic;
-
     // The subset of llvm::Attribute needed for arguments, packed into a bitfield.
-    #[derive(Clone, Copy, Default, Hash, PartialEq, Eq, HashStable_Generic)]
+    #[cfg_attr(feature = "nightly", derive(rustc_macros::HashStable_Generic))]
+    #[derive(Clone, Copy, Default, Hash, PartialEq, Eq)]
     pub struct ArgAttribute(u8);
     bitflags::bitflags! {
         impl ArgAttribute: u8 {
@@ -123,13 +125,19 @@ mod attr_impl {
             const NoUndef = 1 << 6;
         }
     }
-    rustc_data_structures::external_bitflags_debug! { ArgAttribute }
+
+    impl std::fmt::Debug for ArgAttribute {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            bitflags::parser::to_writer(self, f)
+        }
+    }
 }
 
 /// Sometimes an ABI requires small integers to be extended to a full or partial register. This enum
 /// defines if this extension should be zero-extension or sign-extension when necessary. When it is
 /// not necessary to extend the argument, this enum is ignored.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ArgExtension {
     None,
     Zext,
@@ -138,7 +146,8 @@ pub enum ArgExtension {
 
 /// A compact representation of LLVM attributes (at least those relevant for this module)
 /// that can be manipulated without interacting with LLVM's Attribute machinery.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ArgAttributes {
     pub regular: ArgAttribute,
     pub arg_ext: ArgExtension,
@@ -200,7 +209,8 @@ impl ArgAttributes {
 
 /// An argument passed entirely registers with the
 /// same kind (e.g., HFA / HVA on PPC64 and AArch64).
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Uniform {
     pub unit: Reg,
 
@@ -249,7 +259,8 @@ impl Uniform {
 /// `rest.unit` register type gets repeated often enough to cover `rest.size`. This describes the
 /// actual type used for the call; the Rust type of the argument is then transmuted to this ABI type
 /// (and all data in the padding between the registers is dropped).
-#[derive(Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct CastTarget {
     pub prefix: [Option<Reg>; 8],
     pub rest: Uniform,
@@ -331,7 +342,8 @@ impl CastTarget {
 
 /// Information about how to pass an argument to,
 /// or return a value from, a function, under some ABI.
-#[derive(Clone, PartialEq, Eq, Hash, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct ArgAbi<'a, Ty> {
     pub layout: TyAndLayout<'a, Ty>,
     pub mode: PassMode,
@@ -527,7 +539,8 @@ impl<'a, Ty> ArgAbi<'a, Ty> {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum Conv {
     // General language calling conventions, for which every target
     // should have its own backend (e.g. LLVM) support.
@@ -562,7 +575,8 @@ pub enum Conv {
     RiscvInterrupt { kind: RiscvInterruptKind },
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub enum RiscvInterruptKind {
     Machine,
     Supervisor,
@@ -586,7 +600,8 @@ impl RiscvInterruptKind {
 ///
 /// I will do my best to describe this structure, but these
 /// comments are reverse-engineered and may be inaccurate. -NDM
-#[derive(Clone, PartialEq, Eq, Hash, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct FnAbi<'a, Ty> {
     /// The type, layout, and information about how each argument is passed.
     pub args: Box<[ArgAbi<'a, Ty>]>,
@@ -624,7 +639,8 @@ impl<'a, Ty: fmt::Display> fmt::Debug for FnAbi<'a, Ty> {
 }
 
 /// Error produced by attempting to adjust a `FnAbi`, for a "foreign" ABI.
-#[derive(Copy, Clone, Debug, HashStable_Generic)]
+#[cfg_attr(feature = "nightly", derive(HashStable_Generic))]
+#[derive(Copy, Clone, Debug)]
 pub enum AdjustForForeignAbiError {
     /// Target architecture doesn't support "foreign" (i.e. non-Rust) ABIs.
     Unsupported { arch: Symbol, abi: spec::abi::Abi },
@@ -880,7 +896,7 @@ impl FromStr for Conv {
 }
 
 // Some types are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
+#[cfg(all(target_pointer_width = "64", feature = "nightly"))]
 mod size_asserts {
     use rustc_data_structures::static_assert_size;
 

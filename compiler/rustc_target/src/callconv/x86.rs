@@ -70,11 +70,10 @@ where
         let align_4 = Align::from_bytes(4).unwrap();
         let align_16 = Align::from_bytes(16).unwrap();
 
-        if t.is_like_msvc
-            && arg.layout.is_adt()
-            && let Some(max_repr_align) = arg.layout.max_repr_align
-            && max_repr_align > align_4
-        {
+        let max_repr_align = arg.layout.max_repr_align.filter(|&max_repr_align| {
+            t.is_like_msvc && arg.layout.is_adt() && max_repr_align > align_4
+        });
+        if let Some(max_repr_align) = max_repr_align {
             // MSVC has special rules for overaligned arguments: https://reviews.llvm.org/D72114.
             // Summarized here:
             // - Arguments with _requested_ alignment > 4 are passed indirectly.
